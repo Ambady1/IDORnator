@@ -40,3 +40,30 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+.result-item {
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.result-item p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.result-item hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 10px 0;
+}
+
+.text-green {
+    color: green;
+}
+
+.text-red {
+    color: red;
+}
