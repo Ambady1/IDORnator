@@ -7,7 +7,8 @@ app = Flask(__name__)
 def index():
     if request.method == "POST":
         # Process the form and get the values
-        send_idor(request)
+        result = send_idor(request)
+        return render_template("idor.html",result = result)
     return render_template("home.html")
 
 if __name__ == "__main__":

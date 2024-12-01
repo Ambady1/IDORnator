@@ -1,35 +1,22 @@
 {% extends "base.html" %}
 
 {% block head %}
-<title>Data Display</title>
+<title>Result Display</title>
 {% endblock %}
 
 {% block body %}
 <div class="container">
-    <h1>Data Display</h1>
-    <div>
-        <label for="website-name">Website Name:</label>
-        <div id="website-name" >
-            example.com
-        </div>
+    <h1>Checking for IDOR...</h1>
+    {% if result %}
+    <h2>Results:</h2>
+    {% for entry in result %}
+    <div class="result-item {{ 'text-green' if entry.status == 200 else 'text-red' }}">
+        <p><strong>URL:</strong> {{ entry.url }}</p>
+        <p><strong>Payload:</strong> {{ entry.payload }}</p>
+        <p><strong>Status:</strong> {{ entry.status }}</p>
     </div>
-    <div>
-        <label for="dom">DOM:</label>
-        <div id="dom" >
-            Document Object Model Data
-        </div>
-    </div>
-    <div>
-        <label for="parameter">Parameter:</label>
-        <div id="parameter" >
-            Sample Parameter
-        </div>
-    </div>
-    <div>
-        <label for="value">Value:</label>
-        <div id="value" >
-            12345
-        </div>
-    </div>
+    <hr>
+    {% endfor %}
+    {% endif %}
 </div>
 {% endblock %}
