@@ -1,13 +1,12 @@
 import requests
 from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
+from payload import generate_payloads  # Using Groq API for payload generation
 from process_Form import process_form
-
-temp_payload = ["1", "2", "3"]
 
 def send_idor(request):
     """
     Processes the form data, replaces the parameter value in the URL
-    with items from the temp_payload list, and sends HTTP requests.
+    with items from dynamically generated payloads, and sends HTTP requests.
     """
     mode, url = process_form(request)
     parsed_url = urlparse(url)
@@ -18,7 +17,9 @@ def send_idor(request):
 
     param_key = list(query_params.keys())[0]
 
-    # Collect responses
+    # Generate payloads dynamically using Groq API
+    temp_payload = generate_payloads(param_key)
+
     responses = []
     for payload in temp_payload:
         query_params[param_key] = payload
