@@ -1,3 +1,4 @@
+import os
 import requests
 from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
 from payload import generate_payloads  # Using Groq API for payload generation
@@ -18,7 +19,10 @@ def send_idor(request):
         query_params = parse_qs(parsed_url.query)
         key_value = list(query_params.values())[0][0]
         temp_payload = generate_payloads(url,key_value)
-
+    else:
+        key_value = os.path.basename(parsed_url.path)
+        print(key_value)
+        
 
     # Generate payloads dynamically using Groq API
     responses = []
