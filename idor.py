@@ -16,9 +16,9 @@ def send_idor(request):
         return [{"url": url, "payload": "N/A", "status": "Invalid URL"}]
 
     param_key = list(query_params.keys())[0]
-
-    # Generate payloads dynamically using Groq API
-    temp_payload = generate_payloads(param_key)
+   
+    # Pass both the URL and the key element to generate_payloads
+    temp_payload = generate_payloads(url, param_key)
 
     responses = []
     for payload in temp_payload:
