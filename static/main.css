@@ -78,3 +78,30 @@ input, select {
 .btn:hover {
     background-color: #1e5d42; /* Darker green on hover */
 }
+
+/* Results container styling */
+#results {
+    width: 80%; /* Adjust the width as needed */
+    max-height: 400px; /* Set a fixed height */
+    margin-top: 20px; /* Add some space above the results */
+    padding: 10px; /* Add padding inside the container */
+    border: 1px solid #3498db; /* Blue border to match input styling */
+    border-radius: 4px; /* Slightly rounded corners */
+    background-color: #2c3e50; /* Dark background to match theme */
+    color: #f4f4f4; /* Text color */
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling if content exceeds width */
+    text-align: left; /* Align text to the left for better readability */
+}
+
+/* Green text for successful results */
+.text-green {
+    color: #32CD32; /* Lime green */
+    font-weight: bold; /* Make it stand out */
+}
+
+/* Red text for failed results */
+.text-red {
+    color: #FF4500; /* Orange-red */
+    font-weight: bold; /* Make it stand out */
+}

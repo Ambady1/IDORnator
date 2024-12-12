@@ -26,8 +26,7 @@ def idor_stream():
         flag = 0
         # Step 1: Test IDOR
         yield "data: Creating intelligent payloads using AI...\n\n"
-        result1, flag = send_idor(form_data, flag)  # Use request.form for data
-        print(result1)
+        result1, flag = send_idor(form_data, flag)  
         for entry in result1:
             yield (
                 f"data: <div class='result-item "
