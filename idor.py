@@ -4,25 +4,21 @@ from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
 from payload import generate_payloads  # Using Groq API for payload generation
 from process_Form import process_form
 
-def send_idor(request):
+def send_idor(form_data, flag):
     """
     Processes the form data, replaces the parameter value in the URL
     with items from dynamically generated payloads, and sends HTTP requests.
     """
-    mode, url = process_form(request)
+    url = process_form(form_data)
     parsed_url = urlparse(url)
-
-    '''if not query_params:
-        return [{"url": url, "payload": "N/A", "status": "Invalid URL"}]'''
 
     if parsed_url.query:
         query_params = parse_qs(parsed_url.query)
         key_value = list(query_params.values())[0][0]
-        temp_payload = generate_payloads(url,key_value)
+        temp_payload = generate_payloads(url, key_value)
     else:
         key_value = os.path.basename(parsed_url.path)
-        print(key_value)
-        
+        temp_payload = generate_payloads(url, key_value)  # Ensure temp_payload is defined here
 
     # Generate payloads dynamically using Groq API
     responses = []
@@ -47,4 +43,4 @@ def send_idor(request):
                     "status": f"Error: {str(e)}"
                 })
 
-    return responses
+    return responses, flag

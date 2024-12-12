@@ -1,5 +1,4 @@
 from groq import Groq
-from process_Form import process_form
 from openai import OpenAI
 import google.generativeai as genai
 
@@ -15,12 +14,13 @@ def generate_payloads(url, key_element):
     
     model = genai.GenerativeModel("gemini-1.5-flash")
     response = model.generate_content(query)
+
     
     try:
         # Assume response contains newline-separated payloads
-        payloads = response.choices[0].message.content.split('\n')
-        print(payloads)
-        return [p.strip() for p in payloads if p.strip()]
+        payloads = response.text.split('\n')
+        urls = [line.split('`')[1] for line in payloads if '`' in line and "https://" in line]
+        return urls
     except Exception as e:
         print(f"Error generating payloads: {e}")
         return ["1", "2", "3"]  # Default payloads as fallback
