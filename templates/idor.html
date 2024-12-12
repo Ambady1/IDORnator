@@ -2,21 +2,40 @@
 
 {% block head %}
 <title>Result Display</title>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const resultsContainer = document.getElementById("results");
+    const eventSource = new EventSource(`/idor-stream`);
+
+    eventSource.onmessage = function (event) {
+        const newContent = document.createElement("div");
+        newContent.innerHTML = event.data;
+        console.log(event.data);
+        resultsContainer.appendChild(newContent);
+
+        // Scroll to the bottom of the results container
+        resultsContainer.scrollTop = resultsContainer.scrollHeight;
+
+        // Close the event source if testing is completed
+        if (event.data.includes("Testing completed.")) {
+            eventSource.close();
+        }
+    };
+
+    eventSource.onerror = function () {
+        const errorMessage = document.createElement("p");
+        errorMessage.textContent = "An error occurred while processing the test.";
+        resultsContainer.appendChild(errorMessage);
+        eventSource.close();
+    };
+});
+
+</script>
 {% endblock %}
 
 {% block body %}
 <div class="container">
-    <h1>Checking for IDOR...</h1>
-    {% if result %}
-    <h2>Results:</h2>
-    {% for entry in result %}
-    <div class="result-item {{ 'text-green' if entry.status == 200 else 'text-red' }}">
-        <p><strong>URL:</strong> {{ entry.url }}</p>
-        <p><strong>Payload:</strong> {{ entry.payload }}</p>
-        <p><strong>Status:</strong> {{ entry.status }}</p>
-    </div>
-    <hr>
-    {% endfor %}
-    {% endif %}
+    <h1>Testing in Progress...</h1>
+    <div id="results" class="results"></div>
 </div>
 {% endblock %}

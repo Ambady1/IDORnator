@@ -1,7 +1,6 @@
-def process_form(request):
+def process_form(form_data):
     """
-    Processes the form input and returns the mode and URL values.
+    Processes the form input and returns the URL values.
     """
-    mode = request.form.get("mode")
-    url = request.form.get("url")
-    return mode, url
+    url = form_data["url"]
+    return url
