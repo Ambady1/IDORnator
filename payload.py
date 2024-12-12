@@ -1,43 +1,57 @@
-from groq import Groq
-from process_Form import process_form
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
 
+# Load environment variables from .env file
+load_dotenv()
 
-def generate_payloads(param_key):
-    """
-    Uses Groq API to dynamically generate potential payloads.
-    """
-    client = Groq(api_key="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")
-    response = client.chat.completions.create(
-        model="gemma-7b-it",
-        messages=[
-            {
-                "role": "user",
-                "content": (
-                    
-                    f"""
-Given the parameter '{param_key}', analyze its structure to identify possible encoding or encryption schemes such as:
-1) Base64 encoding, 
-2) Hexadecimal encoding,
-3) URL-safe Base64, 
-4) Common hash-like patterns (e.g., MD5, SHA-256),
-5) Custom obfuscation or encryption techniques.
+def generate_payloads(url, key_element):
+    # Retrieve API key from environment variable
+    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-Based on this analysis, generate a list of payloads that modify the parameter to test for IDOR vulnerabilities, including:
-1) Variations of decoded and re-encoded values using the identified schemes.
-2) Incremental and decremental numeric sequences within encoded formats.
-3) Encoded manipulations of common test strings like SQL injection payloads, path traversal payloads, or special characters.
-4) Encoded and obfuscated versions of boundary test cases, such as extreme numbers or invalid data.
+    messages = [
+        {"role": "system", "content": "You are an advanced cybersecurity expert specializing in IDOR (Insecure Direct Object Reference) vulnerability testing. Your goal is to generate precise, intelligent payload variations that test for unauthorized access to resources."},
+        {"role": "user", "content": (
+            "Generate a comprehensive list of IDOR test payloads with the following advanced guidelines:\n\n"
+            "Payload Generation Methodology:\n"
+            "1. Numeric ID Manipulation:\n"
+            "   - For URLs with 'id' parameters, generate variations like:\n"
+            "     a) Incrementing/decrementing IDs (id=2, id=0, id=-1)\n"
+            "     b) Large/extreme numeric values (id=9999, id=1000000)\n"
+            "     c) Potential admin/system IDs (id=0, id=1)\n\n"
+            "2. Path/Filename Variations:\n"
+            "   - Identify potential administrative or sensitive paths:\n"
+            "     a) Replace user-related terms with admin variants\n"
+            "     b) Explore alternative access points\n"
+            "     c) Test for predictable naming conventions\n\n"
+            "3. Encoding Analysis:\n"
+            "   - Detect and manipulate different encoding types\n"
+            "   - Generate alternative encoded payloads\n\n"
+            "4. Context-Specific Payload Generation:\n"
+            "   - Analyze URL structure for potential access points\n"
+            "   - Generate context-aware IDOR test URLs\n\n"
+            f"Specific URL to Analyze: {url}\n"
+            f"Key Identifying Element: {key_element}\n\n"
+            "Requirements:\n"
+            "- Focus EXCLUSIVELY on IDOR vulnerability testing\n"
+            "- Avoid SQL injection or other unrelated vulnerability payloads\n"
+            "- Generate at least 15 unique, intelligent test URLs\n"
+            "- Prioritize realistic, potentially exploitable variations\n\n"
+            "Provide ONLY the generated payload URLs, one per line, without any additional explanation or commentary."
+        )}
+    ]
 
-Return only the payload values in a newline-separated format, with no additional explanation or details. The payloads must cover all possible edge cases for the given encoding scheme.
-"""
-
-                )
-            }
-        ]
-    )
     try:
-        payloads = response.choices[0].message.content.split('\n')  # Assume response contains newline-separated payloads
-        return [p.strip() for p in payloads if p.strip()]
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": messages[1]["content"]}]
+        )
+
+        # Extract payloads from the response
+        generated_text = response.choices[0].message.content.strip()
+        payloads = [line.strip() for line in generated_text.split("\n") if line.strip()]
+        return payloads
+
     except Exception as e:
         print(f"Error generating payloads: {e}")
         return ["1", "2", "3"]  # Default payloads as fallback

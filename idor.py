@@ -1,3 +1,4 @@
+import os
 import requests
 from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
 from payload import generate_payloads  # Using Groq API for payload generation
@@ -16,28 +17,30 @@ def send_idor(request):
         return [{"url": url, "payload": "N/A", "status": "Invalid URL"}]
 
     param_key = list(query_params.keys())[0]
-
-    # Generate payloads dynamically using Groq API
-    temp_payload = generate_payloads(param_key)
+   
+    # Pass both the URL and the key element to generate_payloads
+    temp_payload = generate_payloads(url, param_key)
 
     responses = []
     for payload in temp_payload:
-        query_params[param_key] = payload
-        new_query = urlencode(query_params, doseq=True)
-        modified_url = urlunparse(parsed_url._replace(query=new_query))
+        if parsed_url.query:
+            param_key = list(query_params.keys())[0]
+            query_params[param_key] = payload
+            new_query = urlencode(query_params, doseq=True)
+            modified_url = urlunparse(parsed_url._replace(query=new_query))
 
-        try:
-            response = requests.get(modified_url)
-            responses.append({
-                "url": modified_url,
-                "payload": payload,
-                "status": response.status_code
-            })
-        except requests.RequestException as e:
-            responses.append({
-                "url": modified_url,
-                "payload": payload,
-                "status": f"Error: {str(e)}"
-            })
+            try:
+                response = requests.get(modified_url)
+                responses.append({
+                    "url": modified_url,
+                    "payload": payload,
+                    "status": response.status_code
+                })
+            except requests.RequestException as e:
+                responses.append({
+                    "url": modified_url,
+                    "payload": payload,
+                    "status": f"Error: {str(e)}"
+                })
 
     return responses

@@ -1,69 +1,80 @@
+/* General styling for the page */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
+    background-color: #1e1e1e;
+    color: #f4f4f4;
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f4f4f9;
 }
 
+/* Container styling */
 .container {
-    text-align: center;
-    background: white;
     padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers the form within the container */
+    text-align: center;
 }
 
+/* Header styling */
+.header pre {
+    font-size: 1.5em; /* Larger heading size */
+    color: #FFA500; /* Light orange */
+    margin-bottom: 30px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Form group styling */
+.form-group {
+    display: flex;
+    align-items: center; /* Aligns label and input box vertically centered */
+    justify-content: space-between; /* Positions label and input on either side */
+    margin-bottom: 15px; /* Space between each form group */
+    width: 80%; /* Adjusted width for the form groups */
+}
+
+/* Label styling */
 label {
-    font-weight: bold;
-    margin: 10px 0;
+    font-size: 1em; /* Label size */
+    color: #FFA500; /* Light orange */
+    margin-right: 10px; /* Space between label and input */
+    flex: 1; /* Ensures label takes available space */
 }
 
-input, select, button {
-    margin: 10px 0;
-    padding: 10px;
-    width: 80%;
-    border-radius: 5px;
-    border: 1px solid #ddd;
+/* Input and select styling */
+input, select {
+    width: 60%; /* Adjusted width for input boxes */
+    padding: 10px; /* Padding for input boxes */
+    border: 1px solid #3498db; /* Blue border */
+    border-radius: 4px;
+    background-color: #2c3e50; /* Dark background */
+    color: #3498db; /* Blue text */
+    font-size: 1em; /* Font size for input */
+    display: inline-block; /* Ensures alignment */
 }
 
-button {
-    background-color: #007bff;
-    color: white;
+/* Button styling */
+/* Button styling */
+.btn {
+    width: auto; /* Auto width to fit the content */
+    padding: 10px 20px; /* Padding to make the button rectangular */
+    background-color: #2e8b57; /* Dark green background */
+    color: white; /* Text color */
     border: none;
+    border-radius: 4px; /* Slightly rounded corners */
+    font-size: 1em; /* Font size for the button */
+    display: flex;
+    align-items: center; /* Centers the text vertically */
+    justify-content: center; /* Centers the text horizontally */
     cursor: pointer;
+    margin-left: 10px; /* Space between the input and the button */
+    transition: background-color 0.3s ease;
 }
 
-button:hover {
-    background-color: #0056b3;
-}
-
-.result-item {
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-.result-item p {
-    margin: 5px 0;
-    font-size: 14px;
-}
-
-.result-item hr {
-    border: none;
-    border-top: 1px solid #ddd;
-    margin: 10px 0;
-}
-
-.text-green {
-    color: green;
-}
-
-.text-red {
-    color: red;
+.btn:hover {
+    background-color: #1e5d42; /* Darker green on hover */
 }
