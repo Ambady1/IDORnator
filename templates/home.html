@@ -2,31 +2,45 @@
 
 {% block head %}
 <title>IDORnator</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 {% endblock %}
 
 {% block body %}
 <div class="container">
-    <h1>IDORnator</h1>
+    <div class="header">
+        <pre>
+            .___________   ________ __________               __                
+            |   \______ \  \_____  \\______   \ ____ _____ _/  |_  ___________ 
+            |   ||    |  \  /   |   \|       _//    \\__  \\   __\/  _ \_  __ \
+            |   ||    `   \/    |    \    |   \   |  \/ __ \|  | (  <_> )  | \/
+            |___/_______  /\_______  /____|_  /___|  (____  /__|  \____/|__|   
+                        \/         \/       \/     \/     \/                   
+                                                                               
+                                                                                                                    
+        </pre>
+    </div>
     <form method="POST" action="/">
-        <label for="mode">Enter the Mode:</label>
-        <select name="mode" id="mode" required>
-            <option value="IDOR">IDOR</option>
-            <option value="BAC">BAC</option>
-            <option value="BOTH">Both</option>
-        </select>
-        <br>
-        <label for="Depth">Enter the Depth:</label>
-        <select name="Depth" id="Depth" required>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-        </select>
-        <br>
-        <br>
-        <label for="url">Enter the URL:</label>
-        <input type="text" id="url" name="url" placeholder="https://example.com" required>
-        <br>
-        <button type="submit">Submit</button>
+        <div class="form-group">
+            <label for="mode">Enter the Mode:</label>
+            <select name="mode" id="mode" required>
+                <option value="IDOR">IDOR</option>
+                <option value="BAC">BAC</option>
+                <option value="BOTH">Both</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="Depth">Enter the Depth:</label>
+            <select name="Depth" id="Depth" required>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="url">Enter the URL:</label>
+            <input type="text" id="url" name="url" placeholder="https://example.com" required>
+        </div>
+        <button class="btn" type="submit">Submit</button>
     </form>
 </div>
 {% endblock %}
