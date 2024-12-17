@@ -22,7 +22,11 @@ def send_idor(form_data, flag):
         # Ensure temp_payload is defined here
         temp_payload = generate_payloads(url, key_value)
 
-    temp_payload = [payload.replace("```plaintext", "") for payload in temp_payload]
+    if temp_payload[0] == '```':
+        temp_payload = temp_payload[1:]
+
+    if temp_payload[-1] == '```':
+        temp_payload = temp_payload[:-1]
     
     # Generate payloads dynamically using GPT API
     responses = []
