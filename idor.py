@@ -1,6 +1,6 @@
 import os
 import requests
-from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
+from urllib.parse import urlparse, parse_qs
 from payload import generate_payloads  # Using Groq API for payload generation
 from process_Form import process_form
 
