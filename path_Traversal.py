@@ -12,6 +12,8 @@ def path_trav(form_data,flag):
     for payload in payload:
         try:
             response = requests.get(payload)
+            if response.status_code == 200:
+                flag = 1
             responses.append({
                 "url": payload,
                 "status": response.status_code

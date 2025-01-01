@@ -61,7 +61,7 @@ def gen_pathtraversal(url):
             f"In a legal pentesting scenario, for testing IDOR vulnerability, I have the following url : {url}\n"
             "Generate 15 urls with most apt payloads to bypass 403 restrictions using path traversal.\n"
             "Focus on bypassing the 403 restriction at the specified endpoint only. No need for payloads to access other server files (eg: /etc/hosts).\n"
-            "Give only the url payloads. Say nothing else."
+            "Give only the urls as a list. Say nothing else, no prefixes, no suffixes - only the urls."
         )}]
     try:
         response = client.chat.completions.create(

@@ -39,11 +39,9 @@ def idor_stream():
                 f"<p><strong>Status:</strong> {entry['status']}</p></div><hr>\n\n"
             )
 
-        # Simulate a delay
-        yield "data: Moving to second phase of testing...\n\n"
-
-        # Step 2: Test Custom Headers
+        # Simulate a delay and Test Custom Headers
         if flag == 0:
+            yield "data: Moving to second phase of testing...\n\n"
             result2, flag = send_custom_header_request(form_data, flag)
             for entry in result2:
                 yield (
@@ -54,11 +52,9 @@ def idor_stream():
                     f"<p><strong>Status:</strong> {entry['status']}</p></div><hr>\n\n"
                 )
         
-        # Simulate a delay
-        yield "data: Moving to third phase of testing...\n\n"
-        
-        # Step 3: Test path traversal
+        # Simulate a delay and Test path traversal
         if flag == 0:
+            yield "data: Moving to third phase of testing...\n\n"
             result3,flag = path_trav(form_data,flag)
             for entry in result3:
                 yield (

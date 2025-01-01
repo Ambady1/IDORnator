@@ -33,6 +33,8 @@ def send_idor(form_data, flag):
     for payload in temp_payload:
         try:
             response = requests.get(payload)
+            if response.status_code == 200:
+                flag = 1
             responses.append({
                 "url": payload,
                 "payload": payload,
