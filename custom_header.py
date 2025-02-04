@@ -64,17 +64,18 @@ def send_custom_header_request(form_data,flag):
         try:
             # Sending a GET request with a single header
             response = requests.get(url, headers=single_header)
-
+            if response.status_code == 200:
+                flag = 1
             # Display response for each header
             result.append({
-                "header": {key},
-                "value" : {header_value},
-                "status" : {response.status_code}
+                "header": key,
+                "value" : header_value,
+                "status" : response.status_code
             })
         except requests.exceptions.RequestException as e:
             result.append({
-                "header": {key},
-                "value" : {header_value},
+                "header": key,
+                "value" : header_value,
                 "status" : f"Some Error Occured: {str(e)}"
             })
 

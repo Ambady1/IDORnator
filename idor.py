@@ -1,6 +1,7 @@
 import os
 import requests
-from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
+from urllib.parse import urlparse, parse_qs
+from analyze_resp import resp_analyze
 from payload import generate_payloads  # Using Groq API for payload generation
 from process_Form import process_form
 
@@ -33,12 +34,28 @@ def send_idor(form_data, flag):
     for payload in temp_payload:
         try:
             response = requests.get(payload)
-            responses.append({
+            if response.status_code == 200:
+                resp_res = resp_analyze(payload, response.content)
+                flag = 1
+            else:
+                resp_res = None  # Set to None if no analysis is required
+            
+            # Create a base dictionary
+            response_entry = {
                 "url": payload,
                 "payload": payload,
                 "status": response.status_code
-            })
+            }
+
+            # Update the dictionary if resp_res indicates vulnerability
+            if resp_res == 'Y':
+                response_entry["Result after response analysis"] = "VULNERABLE"
+        
+            # Append the final dictionary to responses
+            responses.append(response_entry)
+
         except requests.RequestException as e:
+            # Handle errors similarly
             responses.append({
                 "url": payload,
                 "payload": payload,
