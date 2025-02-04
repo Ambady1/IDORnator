@@ -31,13 +31,19 @@ def idor_stream():
         yield "data: Creating intelligent payloads using AI...\n\n"
         result1, flag = send_idor(form_data, flag)  
         for entry in result1:
+            analysis_result = entry.get("Result after response analysis", "")
+            text_color = "text-green" if analysis_result == "VULNERABLE" else "text-red"
+
             yield (
-                f"data: <div class='result-item "
-                f"{'text-green' if entry['status'] == 200 else 'text-red'}'>"
+                f"data: <div class='result-item {text_color}'>"
                 f"<p><strong>URL:</strong> {entry['url']}</p>"
                 f"<p><strong>Payload:</strong> {entry['payload']}</p>"
-                f"<p><strong>Status:</strong> {entry['status']}</p></div><hr>\n\n"
+                f"<p><strong>Status:</strong> {entry['status']}</p>"
+                f"{f'<p><strong>Analysis:</strong> {analysis_result}</p>' if analysis_result else ''}"
+                f"</div><hr>\n\n"
             )
+
+
 
         # Simulate a delay and Test Custom Headers
         if flag == 0:

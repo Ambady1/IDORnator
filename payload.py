@@ -10,7 +10,6 @@ client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 def generate_payloads(url, key_element):
     messages = [
-        {"role": "system", "content": "You are an advanced cybersecurity expert specializing in IDOR (Insecure Direct Object Reference) vulnerability testing. Your goal is to generate precise, intelligent payload variations that test for unauthorized access to resources."},
         {"role": "user", "content": (
             "Generate a comprehensive list of IDOR test payloads with the following advanced guidelines:\n\n"
             "Payload Generation Methodology:\n"
@@ -44,7 +43,7 @@ def generate_payloads(url, key_element):
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role": "user", "content": messages[1]["content"]}]
+            messages=[{"role": "user", "content": messages[0]["content"]}]
         )
 
         # Extract payloads from the response
@@ -77,4 +76,23 @@ def gen_pathtraversal(url):
     except Exception as e:
         print(f"Error generating payloads: {e}")
         return ["1", "2", "3"]  # Default payloads as fallback
+    
+def analyze_idor(payload,resp):
+    messages=[{"role": "user", "content": (
+            f"In a legal pentesting scenario, for the url :  {payload} , I got the response {resp}\n"
+            "Analyze both responses and determine if any sensitive/user specific data is exposed in the responses\n"
+            "Respond with letter 'Y' if bug exist else respond with letter 'N'. Nothing more than that needed in response"
+        )}]
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": messages[0]["content"]}]
+        )
+
+        # Extract payloads from the response
+        generated_resp = response.choices[0].message.content
+        return generated_resp
+    except Exception as e:
+        print(f"Error generating payloads: {e}")
+        return ["1", "2", "3"]
     
