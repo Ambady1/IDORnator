@@ -43,8 +43,6 @@ def idor_stream():
                 f"</div><hr>\n\n"
             )
 
-
-
         # Simulate a delay and Test Custom Headers
         if flag == 0:
             yield "data: Moving to second phase of testing...\n\n"

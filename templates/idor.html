@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
     eventSource.onmessage = function (event) {
         const newContent = document.createElement("div");
         newContent.innerHTML = event.data;
-        console.log(event.data);
         resultsContainer.appendChild(newContent);
 
         // Scroll to the bottom of the results container
