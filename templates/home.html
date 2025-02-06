@@ -19,13 +19,12 @@
                                                                                                                     
         </pre>
     </div>
-    <form method="POST" action="/">
+    <form method="POST" action="/" id="mainForm">
         <div class="form-group">
             <label for="mode">Enter the Mode:</label>
             <select name="mode" id="mode" required>
                 <option value="IDOR">IDOR</option>
                 <option value="BAC">BAC</option>
-                <option value="BOTH">Both</option>
             </select>
         </div>
         <div class="form-group">
@@ -36,11 +35,59 @@
                 <option value="Low">Low</option>
             </select>
         </div>
-        <div class="form-group">
+        
+        <div id="urlGroup" class="form-group" style="display:block;">
             <label for="url">Enter the URL:</label>
             <input type="text" id="url" name="url" placeholder="https://example.com" required>
         </div>
+        
+        <div id="tokenGroup" class="form-group" style="display:none;">
+            <div class="form-group">
+                <label for="lower">Enter the lower privilege token:</label>
+                <input type="text" id="lower" name="lower_token" placeholder="ha5da6gahfafkajjhe" required>
+            </div>
+            <div class="form-group">
+                <label for="higher">Enter the higher privilege token:</label>
+                <input type="text" id="higher" name="higher_token" placeholder="ha5da6gahfafkajjhe" required>
+            </div>
+        </div>
+        
         <button class="btn" type="submit">Submit</button>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modeSelect = document.getElementById('mode');
+    const urlGroup = document.getElementById('urlGroup');
+    const tokenGroup = document.getElementById('tokenGroup');
+
+    // Function to toggle form groups based on selected mode
+    function toggleFormGroups() {
+        if (modeSelect.value === 'IDOR') {
+            urlGroup.style.display = 'block';
+            tokenGroup.style.display = 'none';
+            
+            // Make URL required and disable token inputs
+            document.getElementById('url').required = true;
+            document.getElementById('lower').required = false;
+            document.getElementById('higher').required = false;
+        } else if (modeSelect.value === 'BAC') {
+            urlGroup.style.display = 'none';
+            tokenGroup.style.display = 'block';
+            
+            // Make token inputs required and disable URL input
+            document.getElementById('url').required = false;
+            document.getElementById('lower').required = true;
+            document.getElementById('higher').required = true;
+        }
+    }
+
+    // Add event listener to mode select
+    modeSelect.addEventListener('change', toggleFormGroups);
+
+    // Initial setup on page load
+    toggleFormGroups();
+});
+</script>
 {% endblock %}
