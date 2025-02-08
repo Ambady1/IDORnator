@@ -1,3 +1,4 @@
+import time
 from flask import Flask, render_template, request, stream_with_context, Response
 from idor import send_idor
 from custom_header import send_custom_header_request
@@ -11,10 +12,12 @@ app.secret_key = "your_secret_key"
 @app.route("/", methods=["GET", "POST"])
 def home():
     """Render the home page and handle form submission."""
-    if request.method == "POST":
+    if request.method == "POST" and request.form["mode"] == "IDOR":
         # Redirect to the idor.html page
         session["form_data"] = request.form.to_dict()
         return render_template("idor.html", form_data=request)
+    elif request.method == "POST":
+        return render_template("bac.html")
     return render_template("home.html")
 
 
@@ -46,28 +49,36 @@ def idor_stream():
         # Simulate a delay and Test Custom Headers
         if flag == 0:
             yield "data: Moving to second phase of testing...\n\n"
+            time.sleep(5)
             result2, flag = send_custom_header_request(form_data, flag)
             for entry in result2:
+                analysis_result = entry.get("Result after response analysis", "")
+                text_color = "text-green" if analysis_result == "VULNERABLE" else "text-red"
+
                 yield (
-                    f"data: <div class='result-item "
-                    f"{'text-green' if entry['status'] == 200 else 'text-red'}'>"
+                    f"data: <div class='result-item {text_color}'>"
                     f"<p><strong>Header:</strong> {entry['header']}</p>"
                     f"<p><strong>Value:</strong> {entry['value']}</p>"
-                    f"<p><strong>Status:</strong> {entry['status']}</p></div><hr>\n\n"
+                    f"<p><strong>Status:</strong> {entry['status']}</p>"
+                    f"{f'<p><strong>Analysis:</strong> {analysis_result}</p>' if analysis_result else ''}"
+                    f"</div><hr>\n\n"
                 )
         
         # Simulate a delay and Test path traversal
         if flag == 0:
             yield "data: Moving to third phase of testing...\n\n"
+            time.sleep(5)
             result3,flag = path_trav(form_data,flag)
             for entry in result3:
+                analysis_result = entry.get("Result after response analysis", "")
+                text_color = "text-green" if analysis_result == "VULNERABLE" else "text-red"
                 yield (
-                    f"data: <div class='result-item "
-                    f"{'text-green' if entry['status'] == 200 else 'text-red'}'>"
+                    f"data: <div class='result-item {text_color}'>"
                     f"<p><strong>URL:</strong> {entry['url']}</p>"
                     f"<p><strong>Status:</strong> {entry['status']}</p></div><hr>\n\n"
+                    f"{f'<p><strong>Analysis:</strong> {analysis_result}</p>' if analysis_result else ''}"
+                    f"</div><hr>\n\n"
                 )
-            
         # Final message
         yield "data: Testing completed.\n\n"
 

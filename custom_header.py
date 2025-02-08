@@ -1,5 +1,6 @@
 import requests
-from process_Form import process_form
+from analyze_resp import resp_analyze
+from process_Form import process_form_n_cookie
 
 # List of headers to be sent
 headers = {
@@ -53,7 +54,8 @@ headers = {
 # Function to send requests
 def send_custom_header_request(form_data,flag):
     result = []
-    url = process_form(form_data)  # Extract URL from the form
+    url,cookie = process_form_n_cookie(form_data)  # Extract URL from the form
+
     for key, value in headers.items():
         # Replace {url-in-context} with the actual URL value
         header_value = value.replace("{url-in-context}", url) if "{url-in-context}" in value else value
@@ -62,21 +64,34 @@ def send_custom_header_request(form_data,flag):
         single_header = {key: header_value}
 
         try:
+            cookies = {"session_token": cookie}
             # Sending a GET request with a single header
-            response = requests.get(url, headers=single_header)
+            response = requests.get(url, headers=single_header,cookies=cookies)
             if response.status_code == 200:
+                resp_res = resp_analyze(url, response.content)
+            else:
+                resp_res = None
+
+            response_entry = {
+                "header": key,
+                "value": header_value,
+                "status": response.status_code
+            }
+
+            # Update the dictionary if resp_res indicates vulnerability
+            if resp_res == 'Y':
+                response_entry["Result after response analysis"] = "VULNERABLE"
                 flag = 1
-            # Display response for each header
+
+            # Append the final dictionary to responses
+            result.append(response_entry)
+
+        except requests.RequestException as e:
+            # Handle errors similarly
             result.append({
                 "header": key,
-                "value" : header_value,
-                "status" : response.status_code
-            })
-        except requests.exceptions.RequestException as e:
-            result.append({
-                "header": key,
-                "value" : header_value,
-                "status" : f"Some Error Occured: {str(e)}"
+                "value": header_value,
+                "status": f"Error: {str(e)}"
             })
 
     return result,flag
