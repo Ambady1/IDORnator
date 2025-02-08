@@ -36,7 +36,6 @@ def send_idor(form_data, flag):
             response = requests.get(payload)
             if response.status_code == 200:
                 resp_res = resp_analyze(payload, response.content)
-                flag = 1
             else:
                 resp_res = None  # Set to None if no analysis is required
             
@@ -50,6 +49,7 @@ def send_idor(form_data, flag):
             # Update the dictionary if resp_res indicates vulnerability
             if resp_res == 'Y':
                 response_entry["Result after response analysis"] = "VULNERABLE"
+                flag = 1
         
             # Append the final dictionary to responses
             responses.append(response_entry)
