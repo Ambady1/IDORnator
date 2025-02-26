@@ -1,46 +1,65 @@
 import os
 import requests
-from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
+from urllib.parse import urlparse, parse_qs
+from analyze_resp import resp_analyze
 from payload import generate_payloads  # Using Groq API for payload generation
 from process_Form import process_form
 
-def send_idor(request):
+
+def send_idor(form_data, flag):
     """
     Processes the form data, replaces the parameter value in the URL
     with items from dynamically generated payloads, and sends HTTP requests.
     """
-    mode, url = process_form(request)
+    url = process_form(form_data)
     parsed_url = urlparse(url)
-    query_params = parse_qs(parsed_url.query)
 
-    if not query_params:
-        return [{"url": url, "payload": "N/A", "status": "Invalid URL"}]
+    if parsed_url.query:
+        query_params = parse_qs(parsed_url.query)
+        key_value = list(query_params.values())[0][0]
+        temp_payload = generate_payloads(url, key_value)
+    else:
+        key_value = os.path.basename(parsed_url.path)
+        # Ensure temp_payload is defined here
+        temp_payload = generate_payloads(url, key_value)
 
-    param_key = list(query_params.keys())[0]
-   
-    # Pass both the URL and the key element to generate_payloads
-    temp_payload = generate_payloads(url, param_key)
+    if temp_payload[0] == '```':
+        temp_payload = temp_payload[1:]
 
+    if temp_payload[-1] == '```':
+        temp_payload = temp_payload[:-1]
+    
+    # Generate payloads dynamically using GPT API
     responses = []
     for payload in temp_payload:
-        if parsed_url.query:
-            param_key = list(query_params.keys())[0]
-            query_params[param_key] = payload
-            new_query = urlencode(query_params, doseq=True)
-            modified_url = urlunparse(parsed_url._replace(query=new_query))
+        try:
+            response = requests.get(payload)
+            if response.status_code == 200:
+                resp_res = resp_analyze(payload, response.content)
+            else:
+                resp_res = None  # Set to None if no analysis is required
+            
+            # Create a base dictionary
+            response_entry = {
+                "url": payload,
+                "payload": payload,
+                "status": response.status_code
+            }
 
-            try:
-                response = requests.get(modified_url)
-                responses.append({
-                    "url": modified_url,
-                    "payload": payload,
-                    "status": response.status_code
-                })
-            except requests.RequestException as e:
-                responses.append({
-                    "url": modified_url,
-                    "payload": payload,
-                    "status": f"Error: {str(e)}"
-                })
+            # Update the dictionary if resp_res indicates vulnerability
+            if resp_res == 'Y':
+                response_entry["Result after response analysis"] = "VULNERABLE"
+                flag = 1
+        
+            # Append the final dictionary to responses
+            responses.append(response_entry)
 
-    return responses
+        except requests.RequestException as e:
+            # Handle errors similarly
+            responses.append({
+                "url": payload,
+                "payload": payload,
+                "status": f"Error: {str(e)}"
+            })
+
+    return responses, flag

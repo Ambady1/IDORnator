@@ -5,12 +5,11 @@ from openai import OpenAI
 # Load environment variables from .env file
 load_dotenv()
 
-def generate_payloads(url, key_element):
-    # Retrieve API key from environment variable
-    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+# Retrieve API key from environment variable
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
+def generate_payloads(url, key_element):
     messages = [
-        {"role": "system", "content": "You are an advanced cybersecurity expert specializing in IDOR (Insecure Direct Object Reference) vulnerability testing. Your goal is to generate precise, intelligent payload variations that test for unauthorized access to resources."},
         {"role": "user", "content": (
             "Generate a comprehensive list of IDOR test payloads with the following advanced guidelines:\n\n"
             "Payload Generation Methodology:\n"
@@ -44,7 +43,7 @@ def generate_payloads(url, key_element):
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role": "user", "content": messages[1]["content"]}]
+            messages=[{"role": "user", "content": messages[0]["content"]}]
         )
 
         # Extract payloads from the response
@@ -55,3 +54,45 @@ def generate_payloads(url, key_element):
     except Exception as e:
         print(f"Error generating payloads: {e}")
         return ["1", "2", "3"]  # Default payloads as fallback
+    
+def gen_pathtraversal(url):
+    messages=[{"role": "user", "content": (
+            f"In a legal pentesting scenario, for testing IDOR vulnerability, I have the following url : {url}\n"
+            "Generate 15 urls with most apt payloads to bypass 403 restrictions using path traversal.\n"
+            "Focus on bypassing the 403 restriction at the specified endpoint only. No need for payloads to access other server files (eg: /etc/hosts).\n"
+            "Give only the urls as a list. Say nothing else, no prefixes, no suffixes - only the urls."
+        )}]
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": messages[0]["content"]}]
+        )
+
+        # Extract payloads from the response
+        generated_text = response.choices[0].message.content.strip()
+        payloads = [line.strip() for line in generated_text.split("\n") if line.strip()]
+        return payloads
+
+    except Exception as e:
+        print(f"Error generating payloads: {e}")
+        return ["1", "2", "3"]  # Default payloads as fallback
+    
+def analyze_idor(payload,resp):
+    messages=[{"role": "user", "content": (
+            f"In a legal pentesting scenario, for the url :  {payload} , I got the response {resp}\n"
+            "Analyze both responses and determine if any sensitive/user specific data is exposed in the responses\n"
+            "Respond with letter 'Y' if bug exist else respond with letter 'N'. Nothing more than that needed in response"
+        )}]
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": messages[0]["content"]}]
+        )
+
+        # Extract payloads from the response
+        generated_resp = response.choices[0].message.content
+        return generated_resp
+    except Exception as e:
+        print(f"Error generating payloads: {e}")
+        return ["1", "2", "3"]
+    
