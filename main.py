@@ -16,7 +16,8 @@ def home():
         # Redirect to the idor.html page
         session["form_data"] = request.form.to_dict()
         return render_template("idor.html", form_data=request)
-    elif request.method == "POST":
+    elif request.method == "POST" and request.form["mode"] == "BAC":
+        session["form_data"] = request.form.to_dict()
         return render_template("bac.html")
     return render_template("home.html")
 
@@ -25,7 +26,6 @@ def home():
 def idor_stream():
     """Stream the results incrementally using SSE."""
     form_data = session.get("form_data")
-
     @stream_with_context
     def generate_results():
         # Initialize the flag
@@ -83,6 +83,56 @@ def idor_stream():
         yield "data: Testing completed.\n\n"
 
     return Response(generate_results(), content_type="text/event-stream")
+
+
+
+@app.route("/bac-stream", methods=["GET"])
+def bac_stream():
+    """Stream the results of BAC testing."""
+    form_data = session.get("form_data")
+
+    @stream_with_context
+    def generate_results():
+        yield "data: Starting BAC Testing...\n\n"
+        url = form_data.get("url")
+        admin_token = form_data.get("higher_token")
+        user_token = form_data.get("lower_token")
+
+        if not url or not admin_token or not user_token:
+            yield "data: Error: Missing required parameters.\n\n"
+            return
+
+        headers_admin = {"Authorization": f"Bearer {admin_token}"}
+        headers_user = {"Authorization": f"Bearer {user_token}"}
+
+        # Admin Access Check
+        yield "data: Checking admin access...\n\n"
+        response_admin = requests.get(url, headers=headers_admin)
+        admin_content = response_admin.text
+
+        # User Access Check
+        yield "data: Checking user access...\n\n"
+        response_user = requests.get(url, headers=headers_user)
+        user_content = response_user.text
+
+        # Compare Responses
+        if response_user.status_code == 200 and user_content == admin_content:
+            yield "data: <div class='result-item text-red'>"
+            yield "data: <p><strong>Vulnerable:</strong> User can access admin page!</p>"
+            yield "data: </div><hr>\n\n"
+        else:
+            yield "data: <div class='result-item text-green'>"
+            yield "data: <p><strong>Secure:</strong> Access restricted properly.</p>"
+            yield "data: </div><hr>\n\n"
+
+        yield "data: BAC Testing Completed.\n\n"
+
+    return Response(generate_results(), content_type="text/event-stream")
+
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
