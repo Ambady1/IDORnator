@@ -2,7 +2,8 @@ import os
 import requests
 from urllib.parse import urlparse, parse_qs
 from analyze_resp import resp_analyze
-from payload import generate_payloads  # Using Groq API for payload generation
+from gen_report import save_report_as_pdf
+from payload import generate_payloads, generate_report_idor  # Using Groq API for payload generation
 from process_Form import process_form
 
 
@@ -49,6 +50,9 @@ def send_idor(form_data, flag):
             # Update the dictionary if resp_res indicates vulnerability
             if resp_res == 'Y':
                 response_entry["Result after response analysis"] = "VULNERABLE"
+                report = generate_report_idor(url,payload,response.content)
+                #print(report)
+                save_report_as_pdf(report)
                 flag = 1
         
             # Append the final dictionary to responses

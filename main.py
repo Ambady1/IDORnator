@@ -49,7 +49,7 @@ def idor_stream():
                       f"<p><strong>Payload:</strong> {entry['payload']}</p>" \
                       f"<p><strong>Status:</strong> {entry['status']}</p>" \
                       f"{f'<p><strong>Analysis:</strong> {analysis_result}</p>' if analysis_result else ''}" \
-                      f"</div><hr>\n\n"
+                      f"</div><hr>\n\n" 
         except Exception as e:
             yield f"data: Error in IDOR testing: {str(e)}\n\n"
             return
@@ -145,9 +145,9 @@ def bac_stream():
         except requests.RequestException as e:
             yield f"data: Error: {str(e)}\n\n"
 
-        yield "data: BAC Testing Completed.\n\n"
+        yield "data: BAC Testing Completed.\n\n" 
 
-    return Response(generate_results(), content_type="text/event-stream")
+    return Response(generate_results(), content_type="text/event-stream") 
 
 
 if __name__ == "__main__":
