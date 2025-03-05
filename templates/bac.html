@@ -2,8 +2,31 @@
 
 {% block head %}
 <title>BAC Result Display</title>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const resultsContainer = document.getElementById("results");
+    const eventSource = new EventSource(`/bac-stream`);
+
+    eventSource.onmessage = function (event) {
+        const newContent = document.createElement("div");
+        newContent.innerHTML = event.data;
+        resultsContainer.appendChild(newContent);
+        resultsContainer.scrollTop = resultsContainer.scrollHeight;
+
+        if (event.data.includes("BAC Testing Completed.")) {
+            eventSource.close();
+        }
+    };
+
+    eventSource.onerror = function () {
+        resultsContainer.innerHTML += "<p>An error occurred.</p>";
+        eventSource.close();
+    };
+});
+</script>
 {% endblock %}
 
 {% block body %}
-<h1>BAC testing</h1>
+<h1>BAC Testing</h1>
+<div id="results" class="results"></div>
 {% endblock %}

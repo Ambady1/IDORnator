@@ -49,6 +49,10 @@
         
         <div id="tokenGroup" class="form-group" style="display:none;">
             <div class="form-group">
+                <label for="url">Enter the URL:</label>
+                <input type="text" id="url" name="url" placeholder="https://example.com" required>
+            </div>
+            <div class="form-group">
                 <label for="lower">Enter the lower privilege token:</label>
                 <input type="text" id="lower" name="lower_token" placeholder="ha5da6gahfafkajjhe" required>
             </div>
@@ -83,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tokenGroup.style.display = 'block';
             
             // Make token inputs required and disable URL input
-            document.getElementById('url').required = false;
+            document.getElementById('url').required = true;
             document.getElementById('lower').required = true;
             document.getElementById('higher').required = true;
         }
