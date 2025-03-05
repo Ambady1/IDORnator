@@ -15,8 +15,6 @@
             |   ||    `   \/    |    \    |   \   |  \/ __ \|  | (  <_> )  | \/
             |___/_______  /\_______  /____|_  /___|  (____  /__|  \____/|__|   
                         \/         \/       \/     \/     \/                   
-                                                                               
-                                                                                                                    
         </pre>
     </div>
     <form method="POST" action="/" id="mainForm">
@@ -36,10 +34,11 @@
             </select>
         </div>
         
-        <div id="urlGroup" class="form-group" style="display:block;">
+        <!-- IDOR Mode Fields -->
+        <div id="urlGroup" class="form-group">
             <div class="form-group">
-            <label for="url">Enter the URL:</label>
-            <input type="text" id="url" name="url" placeholder="https://example.com" required>
+                <label for="urlIDOR">Enter the URL:</label>
+                <input type="text" id="urlIDOR" name="url" placeholder="https://example.com" required>
             </div>
             <div class="form-group">
                 <label for="cookie">Enter any associated cookie</label>
@@ -47,18 +46,19 @@
             </div>
         </div>
         
+        <!-- BAC Mode Fields -->
         <div id="tokenGroup" class="form-group" style="display:none;">
             <div class="form-group">
-                <label for="url">Enter the URL:</label>
-                <input type="text" id="url" name="url" placeholder="https://example.com" required>
+                <label for="urlBAC">Enter the URL:</label>
+                <input type="text" id="urlBAC" name="url" placeholder="https://example.com">
             </div>
             <div class="form-group">
-                <label for="lower">Enter the lower privilege token:</label>
-                <input type="text" id="lower" name="lower_token" placeholder="ha5da6gahfafkajjhe" required>
+                <label for="lower_token">Enter the lower privilege token:</label>
+                <input type="text" id="lower_token" name="lower_token" placeholder="ha5da6gahfafkajjhe">
             </div>
             <div class="form-group">
-                <label for="higher">Enter the higher privilege token:</label>
-                <input type="text" id="higher" name="higher_token" placeholder="ha5da6gahfafkajjhe" required>
+                <label for="higher_token">Enter the higher privilege token:</label>
+                <input type="text" id="higher_token" name="higher_token" placeholder="ha5da6gahfafkajjhe">
             </div>
         </div>
         
@@ -72,31 +72,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlGroup = document.getElementById('urlGroup');
     const tokenGroup = document.getElementById('tokenGroup');
 
-    // Function to toggle form groups based on selected mode
+    const urlIDOR = document.getElementById('urlIDOR');
+    const urlBAC = document.getElementById('urlBAC');
+    const lowerToken = document.getElementById('lower_token');
+    const higherToken = document.getElementById('higher_token');
+
     function toggleFormGroups() {
         if (modeSelect.value === 'IDOR') {
             urlGroup.style.display = 'block';
             tokenGroup.style.display = 'none';
-            
-            // Make URL required and disable token inputs
-            document.getElementById('url').required = true;
-            document.getElementById('lower').required = false;
-            document.getElementById('higher').required = false;
+
+            // Make IDOR fields required
+            urlIDOR.required = true;
+            urlBAC.required = false;
+            lowerToken.required = false;
+            higherToken.required = false;
         } else if (modeSelect.value === 'BAC') {
             urlGroup.style.display = 'none';
             tokenGroup.style.display = 'block';
-            
-            // Make token inputs required and disable URL input
-            document.getElementById('url').required = true;
-            document.getElementById('lower').required = true;
-            document.getElementById('higher').required = true;
+
+            // Make BAC fields required
+            urlIDOR.required = false;
+            urlBAC.required = true;
+            lowerToken.required = true;
+            higherToken.required = true;
         }
     }
 
-    // Add event listener to mode select
     modeSelect.addEventListener('change', toggleFormGroups);
-
-    // Initial setup on page load
     toggleFormGroups();
 });
 </script>
