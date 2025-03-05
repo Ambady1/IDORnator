@@ -1,11 +1,10 @@
 import time
 from flask import Flask, render_template, request, stream_with_context, Response
+import requests
 from idor import send_idor
 from custom_header import send_custom_header_request
 from flask import session
-
 from path_Traversal import path_trav
-
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
 
@@ -16,8 +15,7 @@ def home():
         # Redirect to the idor.html page
         session["form_data"] = request.form.to_dict()
         return render_template("idor.html", form_data=request)
-    elif request.method == "POST" and request.form["mode"] == "BAC":
-        session["form_data"] = request.form.to_dict()
+    elif request.method == "POST":
         return render_template("bac.html")
     return render_template("home.html")
 
@@ -128,10 +126,6 @@ def bac_stream():
         yield "data: BAC Testing Completed.\n\n"
 
     return Response(generate_results(), content_type="text/event-stream")
-
-
-
-
 
 
 if __name__ == "__main__":
