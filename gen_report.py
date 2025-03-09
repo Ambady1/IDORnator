@@ -1,21 +1,14 @@
 import markdown2
-from weasyprint import HTML
 import os
 
-def save_report_as_pdf(report_content, filename="Vulnerability_Report.pdf"):
-    """
-    Converts the given Markdown report to a formatted PDF and saves it in the working directory.
-    
-    :param report_content: Markdown text (string)
-    :param filename: Name of the output PDF file (default: Vulnerability_Report.pdf)
-    """
+def save_report_as_html(report_content, filename="Vulnerability_Report.html"):
+
     if not report_content.strip():
-        print("❌ Error: Empty report content. PDF not generated.")
+        print("❌ Error: Empty report content. Report generation failed.")
         return
 
     # Convert Markdown to HTML
     html_content = markdown2.markdown(report_content)
-
     # Add CSS for styling
     styled_html = f"""
     <html>
@@ -58,7 +51,10 @@ def save_report_as_pdf(report_content, filename="Vulnerability_Report.pdf"):
 
     # Save PDF in working directory
     output_path = os.path.join(os.getcwd(), filename)
-    HTML(string=styled_html).write_pdf(output_path)
 
-    print(f"✅ Report saved successfully as: {output_path}")
-
+    try:
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(styled_html)
+        print(f"✅ Report saved successfully as: {output_path}")
+    except Exception as e:
+        print(f"❌ Error saving report: {e}")

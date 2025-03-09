@@ -2,7 +2,7 @@ import os
 import requests
 from urllib.parse import urlparse, parse_qs
 from analyze_resp import resp_analyze
-from gen_report import save_report_as_pdf
+from gen_report import save_report_as_html
 from payload import generate_payloads, generate_report_idor  # Using Groq API for payload generation
 from process_Form import process_form, process_form_n_cookie
 
@@ -38,8 +38,6 @@ def send_idor(form_data, flag):
             response = requests.get(payload,cookies=cookies)
             if response.status_code == 200:
                 resp_res = resp_analyze(payload, response.content)
-                print(response.content)
-                print(resp_res)
             else:
                 resp_res = None  # Set to None if no analysis is required
             
@@ -55,7 +53,7 @@ def send_idor(form_data, flag):
                 response_entry["Result after response analysis"] = "VULNERABLE"
                 report = generate_report_idor(url,payload,response.content)
                 #print(report)
-                save_report_as_pdf(report)
+                save_report_as_html(report)
                 flag = 1
         
             # Append the final dictionary to responses
