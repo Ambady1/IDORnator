@@ -1,6 +1,6 @@
 import os
-from dotenv import load_dotenv
-from openai import OpenAI
+from dotenv import load_dotenv 
+from openai import OpenAI 
 
 # Load environment variables from .env file
 load_dotenv()
@@ -96,3 +96,22 @@ def analyze_idor(payload,resp):
         print(f"Error generating payloads: {e}")
         return ["1", "2", "3"]
     
+def generate_report_idor(url,payload,resp):
+    messages=[{"role": "user", "content": (
+            f"Prepare the contents for vulnerability report in the following url : {url}.The following payload : {payload} seems vulnerable as it gave the following response {resp}.Generate a report which includes heading ,description of vulnerability , steps to reproduce the vulnerability ,impact and recomendation"
+            
+        )}]
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": messages[0]["content"]}]
+        )
+
+        # Extract payloads from the response
+        generated_text = response.choices[0].message.content
+        return generated_text
+ 
+    except Exception as e:
+        print(f"Error generating report: {e}")
+        return ["Some Error Occured"]  # Default payloads as fallback
+ 
