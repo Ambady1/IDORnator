@@ -15,7 +15,7 @@ def generate_payloads(url, key_element):
             "Payload Generation Methodology:\n"
             "1. Numeric ID Manipulation:\n"
             "   - For URLs with 'id' parameters, generate variations like:\n"
-            "     a) Incrementing/decrementing IDs (id=2, id=0, id=-1)\n"
+            "     a) Incrementing/decrementing IDs  (incrementing and decrementing single unit is a mandatory case, also check values like id=2, id=0, id=-1)\n"
             "     b) Large/extreme numeric values (id=9999, id=1000000)\n"
             "     c) Potential admin/system IDs (id=0, id=1)\n\n"
             "2. Path/Filename Variations:\n"
@@ -80,8 +80,8 @@ def gen_pathtraversal(url):
 def analyze_idor(payload,resp):
     messages=[{"role": "user", "content": (
             f"In a legal pentesting scenario, for the url :  {payload} , I got the response {resp}\n"
-            "Analyze both responses and determine if any sensitive/user specific data is exposed in the responses\n"
-            "Respond with letter 'Y' if bug exist else respond with letter 'N'. Nothing more than that needed in response"
+            "Analyze the response and determine if any sensitive/user specific/PII data is exposed in the response\n"
+            "Respond with letter 'Y' if any PII/sensitive/user specific data or words like 'welcome' or similar meaning as welcome exist else respond with letter 'N'. Nothing more than that needed in response"
         )}]
     try:
         response = client.chat.completions.create(

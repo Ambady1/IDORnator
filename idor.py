@@ -4,7 +4,7 @@ from urllib.parse import urlparse, parse_qs
 from analyze_resp import resp_analyze
 from gen_report import save_report_as_pdf
 from payload import generate_payloads, generate_report_idor  # Using Groq API for payload generation
-from process_Form import process_form
+from process_Form import process_form, process_form_n_cookie
 
 
 def send_idor(form_data, flag):
@@ -12,7 +12,7 @@ def send_idor(form_data, flag):
     Processes the form data, replaces the parameter value in the URL
     with items from dynamically generated payloads, and sends HTTP requests.
     """
-    url = process_form(form_data)
+    url,cookie = process_form_n_cookie(form_data)  # Extract URL from the form
     parsed_url = urlparse(url)
 
     if parsed_url.query:
@@ -34,9 +34,12 @@ def send_idor(form_data, flag):
     responses = []
     for payload in temp_payload:
         try:
-            response = requests.get(payload)
+            cookies = {"session_token": cookie}
+            response = requests.get(payload,cookies=cookies)
             if response.status_code == 200:
                 resp_res = resp_analyze(payload, response.content)
+                print(response.content)
+                print(resp_res)
             else:
                 resp_res = None  # Set to None if no analysis is required
             
