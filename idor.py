@@ -4,7 +4,7 @@ from urllib.parse import urlparse, parse_qs
 from analyze_resp import resp_analyze
 from gen_report import save_report_as_html
 from payload import generate_payloads, generate_report_idor  # Using Groq API for payload generation
-from process_Form import process_form, process_form_n_cookie
+from process_Form import process_form_n_cookie
 
 
 def send_idor(form_data, flag):
