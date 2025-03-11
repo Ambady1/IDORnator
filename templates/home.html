@@ -17,7 +17,7 @@
                         \/         \/       \/     \/     \/                   
         </pre>
     </div>
-    <form method="POST" action="/" id="mainForm">
+    <form method="POST" action="/" id="mainForm" enctype="multipart/form-data">
         <div class="form-group">
             <label for="mode">Enter the Mode:</label>
             <select name="mode" id="mode" required>
@@ -33,24 +33,24 @@
                 <option value="Low">Low</option>
             </select>
         </div>
-        
+
         <!-- IDOR Mode Fields -->
-        <div id="urlGroup" class="form-group">
+        <div id="idorGroup" class="form-group">
             <div class="form-group">
-                <label for="urlIDOR">Enter the URL:</label>
-                <input type="text" id="urlIDOR" name="url" placeholder="https://example.com" required>
+                <label for="url">Enter the URL:</label>
+                <input type="text" id="url" name="url" placeholder="https://example.com">
             </div>
             <div class="form-group">
-                <label for="cookie">Enter any associated cookie</label>
+                <label for="cookie">Enter any associated cookie:</label>
                 <input type="text" id="cookie" name="cookie" placeholder="session-cookie">
             </div>
         </div>
         
         <!-- BAC Mode Fields -->
-        <div id="tokenGroup" class="form-group" style="display:none;">
+        <div id="bacGroup" class="form-group" style="display:none;">
             <div class="form-group">
-                <label for="urlBAC">Enter the URL:</label>
-                <input type="text" id="urlBAC" name="url" placeholder="https://example.com">
+                <label for="bac_file">Upload a .txt file with BAC URLs:</label>
+                <input type="file" name="bac_file" id="bac_file" accept=".txt">
             </div>
             <div class="form-group">
                 <label for="lower_token">Enter the lower privilege token:</label>
@@ -69,31 +69,36 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modeSelect = document.getElementById('mode');
-    const urlGroup = document.getElementById('urlGroup');
-    const tokenGroup = document.getElementById('tokenGroup');
+    const idorGroup = document.getElementById('idorGroup');
+    const bacGroup = document.getElementById('bacGroup');
 
-    const urlIDOR = document.getElementById('urlIDOR');
-    const urlBAC = document.getElementById('urlBAC');
+    const urlField = document.getElementById('url');
+    const bacFileField = document.getElementById('bac_file');
+
     const lowerToken = document.getElementById('lower_token');
     const higherToken = document.getElementById('higher_token');
 
     function toggleFormGroups() {
         if (modeSelect.value === 'IDOR') {
-            urlGroup.style.display = 'block';
-            tokenGroup.style.display = 'none';
+            idorGroup.style.display = 'block';
+            bacGroup.style.display = 'none';
 
-            // Make IDOR fields required
-            urlIDOR.required = true;
-            urlBAC.required = false;
+            // IDOR fields required
+            urlField.required = true;
+            bacFileField.required = false;
+
+            // BAC fields not required
             lowerToken.required = false;
             higherToken.required = false;
         } else if (modeSelect.value === 'BAC') {
-            urlGroup.style.display = 'none';
-            tokenGroup.style.display = 'block';
+            idorGroup.style.display = 'none';
+            bacGroup.style.display = 'block';
 
-            // Make BAC fields required
-            urlIDOR.required = false;
-            urlBAC.required = true;
+            // IDOR fields not required
+            urlField.required = false;
+
+            // BAC fields required
+            bacFileField.required = true;
             lowerToken.required = true;
             higherToken.required = true;
         }
