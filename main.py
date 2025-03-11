@@ -7,6 +7,7 @@ from path_Traversal import path_trav
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Change this to a secure key
 
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     """Render the home page and handle form submission."""
@@ -15,10 +16,12 @@ def home():
 
         if mode == "IDOR":
             session["idor_form_data"] = request.form.to_dict()
+            print("Session Data for IDOR Stored:", session["idor_form_data"])  # Debugging
             return render_template("idor.html", form_data=session["idor_form_data"])
         
         elif mode == "BAC":
             session["bac_form_data"] = request.form.to_dict()
+            print("Session Data for BAC Stored:", session["bac_form_data"])  # Debugging
             return render_template("bac.html")
 
     return render_template("home.html")
@@ -27,10 +30,12 @@ def home():
 @app.route("/idor-stream", methods=["GET"])
 def idor_stream():
     """Stream IDOR testing results incrementally using Server-Sent Events (SSE)."""
-    form_data = session.get("idor_form_data")  # Corrected key
+    form_data = session.get("idor_form_data")
 
     if not form_data:
         return Response("data: Error: No form data found.\n\n", content_type="text/event-stream")
+
+    print("IDOR Form Data Retrieved:", form_data)  # Debugging
 
     @stream_with_context
     def generate_results():
@@ -100,54 +105,86 @@ def idor_stream():
 
 @app.route("/bac-stream", methods=["GET"])
 def bac_stream():
-    """Stream BAC testing results using SSE."""
-    form_data = session.get("bac_form_data")  # Corrected key
+    """Stream the results of BAC testing."""
+    bac_form_data = session.get("bac_form_data")
 
-    if not form_data:
+    if not bac_form_data:
         return Response("data: Error: No form data found.\n\n", content_type="text/event-stream")
+
+    print("BAC Form Data Retrieved:", bac_form_data) 
+
+    # Read URLs from a text file
+    try:
+        with open("BacURLs.txt", "r") as file:
+            urls = [line.strip() for line in file.readlines() if line.strip()]
+    except Exception as e:
+        return Response(f"data: Error reading URL file: {str(e)}\n\n", content_type="text/event-stream")
+
+    if not urls:
+        return Response("data: Error: No URLs found in file.\n\n", content_type="text/event-stream")
 
     @stream_with_context
     def generate_results():
         yield "data: Starting BAC Testing...\n\n"
 
-        url = form_data.get("url")
-        admin_token = form_data.get("higher_token")
-        user_token = form_data.get("lower_token")
+        lower_token = bac_form_data.get("lower_token")
+        higher_token = bac_form_data.get("higher_token")
 
-        if not url or not admin_token or not user_token:
+        # Validate required fields
+        if not lower_token or not higher_token:
             yield "data: Error: Missing required parameters.\n\n"
             return
 
-        headers_admin = {"Authorization": f"Bearer {admin_token}"}
-        headers_user = {"Authorization": f"Bearer {user_token}"}
+        print("Form Data Received:", bac_form_data)
+        headers_lower = {"Authorization": f"Bearer {lower_token}"}
+        headers_higher = {"Authorization": f"Bearer {higher_token}"}
 
-        try:
-            # Admin Access Check
-            yield "data: Checking admin access...\n\n"
-            response_admin = requests.get(url, headers=headers_admin)
-            admin_content = response_admin.text
+        methods = ["GET", "POST", "DELETE", "PATCH", "PUT"]
+        results = {}
 
-            # User Access Check
-            yield "data: Checking user access...\n\n"
-            response_user = requests.get(url, headers=headers_user)
-            user_content = response_user.text
+        for url in urls:
+            for method in methods:
+                try:
+                    # Admin Access
+                    yield f"data: Checking admin access to {url} using {method}...\n\n"
+                    response_admin = requests.request(method, url, headers=headers_higher)
+                    admin_content = response_admin.text
+                    admin_status = response_admin.status_code
 
-            # Compare Responses
-            if response_user.status_code == 200 and user_content == admin_content:
-                yield "data: <div class='result-item text-red'>" \
-                      "<p><strong>Vulnerable:</strong> User can access admin page!</p>" \
-                      "</div><hr>\n\n"
+                    # User Access
+                    yield f"data: Checking user access to {url} using {method}...\n\n"
+                    response_user = requests.request(method, url, headers=headers_lower)
+                    user_content = response_user.text
+                    user_status = response_user.status_code
+
+                    # Store results
+                    results[(url, method)] = {
+                        "admin_status": admin_status,
+                        "user_status": user_status,
+                        "admin_content": admin_content,
+                        "user_content": user_content,
+                    }
+
+                except Exception as e:
+                    yield f"data: Error in {method} request to {url}: {str(e)}\n\n"
+                    continue
+
+        # Analyze the results
+        for (url, method), result in results.items():
+            if (
+                result["user_status"] == result["admin_status"]
+                and result["user_content"] == result["admin_content"]
+            ):
+                yield f"data: <div class='result-item text-red'>"
+                yield f"data: <p><strong>Vulnerable:</strong> User can perform {method} actions on {url} meant for admin!</p></div><hr>\n\n"
             else:
-                yield "data: <div class='result-item text-green'>" \
-                      "<p><strong>Secure:</strong> Access restricted properly.</p>" \
-                      "</div><hr>\n\n"
-
-        except requests.RequestException as e:
-            yield f"data: Error: {str(e)}\n\n"
+                yield f"data: <div class='result-item text-green'>"
+                yield f"data: <p><strong>Secure:</strong> Access control works for {method} on {url}.</p></div><hr>\n\n"
 
         yield "data: BAC Testing Completed.\n\n" 
 
     return Response(generate_results(), content_type="text/event-stream") 
+
 
 
 if __name__ == "__main__":
