@@ -98,8 +98,7 @@ def analyze_idor(payload,resp):
     
 def generate_report_idor(url,payload,resp):
     messages=[{"role": "user", "content": (
-            f"Prepare the contents for vulnerability report in the following url : {url}.The following payload : {payload} seems vulnerable as it gave the following response {resp}.Generate a report which includes heading ,description of vulnerability , steps to reproduce the vulnerability ,impact and recomendation"
-            
+            f"Write a vulnerability report based on the given data:- The original URL used for testing is this : {url}.This is the list of variation of original URL that our system marked vulnerable : {payload} and this is a list containing the html resposes we got for these URLs .Based on the provided info generate a vulnerability report which includes heading ,description of vulnerability , steps to reproduce the vulnerability ,impact and recomendation"            
         )}]
     try:
         response = client.chat.completions.create(

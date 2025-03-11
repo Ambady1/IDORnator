@@ -32,6 +32,8 @@ def send_idor(form_data, flag):
     
     # Generate payloads dynamically using GPT API
     responses = []
+    vuln_payloads = []
+    vuln_content = []
     for payload in temp_payload:
         try:
             cookies = {"session_token": cookie}
@@ -47,15 +49,14 @@ def send_idor(form_data, flag):
                 "payload": payload,
                 "status": response.status_code
             }
-
+            
             # Update the dictionary if resp_res indicates vulnerability
             if resp_res == 'Y':
                 response_entry["Result after response analysis"] = "VULNERABLE"
-                report = generate_report_idor(url,payload,response.content)
-                #print(report)
-                save_report_as_html(report)
+                vuln_payloads.append(payload)
+                vuln_content.append(response.content)                
                 flag = 1
-        
+
             # Append the final dictionary to responses
             responses.append(response_entry)
 
@@ -66,5 +67,10 @@ def send_idor(form_data, flag):
                 "payload": payload,
                 "status": f"Error: {str(e)}"
             })
-
+    #Generate report
+    try:
+        report = generate_report_idor(url,vuln_payloads,response.content)
+        save_report_as_html(report)
+    except:
+        print("Report generation failed")
     return responses, flag
