@@ -20,22 +20,11 @@ body {
     text-align: center;
 }
 
-/* Header styling */
-.header pre {
-    font-size: 1.5em; /* Larger heading size */
-    color: #FFA500; /* Light orange */
-    margin-bottom: 30px;
-    font-family: 'Courier New', monospace;
-}
+
+
 
 /* Form group styling */
-.form-group {
-    display: flex;
-    align-items: center; /* Aligns label and input box vertically centered */
-    justify-content: space-between; /* Positions label and input on either side */
-    margin-bottom: 15px; /* Space between each form group */
-    width: 80%; /* Adjusted width for the form groups */
-}
+
 
 /* Label styling */
 label {
