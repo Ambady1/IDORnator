@@ -4,7 +4,6 @@ from flask import Flask, render_template, request, stream_with_context, Response
 from idor import send_idor
 from custom_header import send_custom_header_request
 from path_Traversal import path_trav
-
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Change this to a secure key
 
@@ -55,7 +54,7 @@ def idor_stream():
                       f"<p><strong>Payload:</strong> {entry['payload']}</p>" \
                       f"<p><strong>Status:</strong> {entry['status']}</p>" \
                       f"{f'<p><strong>Analysis:</strong> {analysis_result}</p>' if analysis_result else ''}" \
-                      f"</div><hr>\n\n"
+                      f"</div><hr>\n\n" 
         except Exception as e:
             yield f"data: Error in IDOR testing: {str(e)}\n\n"
             return
@@ -182,9 +181,9 @@ def bac_stream():
                 yield f"data: <div class='result-item text-green'>"
                 yield f"data: <p><strong>Secure:</strong> Access control works for {method} on {url}.</p></div><hr>\n\n"
 
-        yield "data: BAC Testing Completed.\n\n"
+        yield "data: BAC Testing Completed.\n\n" 
 
-    return Response(generate_results(), content_type="text/event-stream")
+    return Response(generate_results(), content_type="text/event-stream") 
 
 
 
