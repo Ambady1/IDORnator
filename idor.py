@@ -68,9 +68,10 @@ def send_idor(form_data, flag):
                 "status": f"Error: {str(e)}"
             })
     #Generate report
-    try:
-        report = generate_report_idor(url,vuln_payloads,response.content)
-        save_report_as_html(report)
-    except:
-        print("Report generation failed")
+    if vuln_payloads:
+        try:
+            report = generate_report_idor(url,vuln_payloads,vuln_content)
+            save_report_as_html(report)
+        except:
+            print("Report generation failed")
     return responses, flag

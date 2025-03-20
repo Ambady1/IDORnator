@@ -1,8 +1,10 @@
 import time
 import requests  # Ensure this is installed
 from flask import Flask, render_template, request, stream_with_context, Response, session
+from bac import basic_bac
+from capitalization import capital_bypass
 from idor import send_idor
-from custom_header import send_custom_header_request
+from custom_header import header_inj_bac, send_custom_header_request
 from path_Traversal import path_trav
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Change this to a secure key
@@ -16,12 +18,10 @@ def home():
 
         if mode == "IDOR":
             session["idor_form_data"] = request.form.to_dict()
-            print("Session Data for IDOR Stored:", session["idor_form_data"])  # Debugging
             return render_template("idor.html", form_data=session["idor_form_data"])
         
         elif mode == "BAC":
             session["bac_form_data"] = request.form.to_dict()
-            print("Session Data for BAC Stored:", session["bac_form_data"])  # Debugging
             return render_template("bac.html")
 
     return render_template("home.html")
@@ -34,8 +34,6 @@ def idor_stream():
 
     if not form_data:
         return Response("data: Error: No form data found.\n\n", content_type="text/event-stream")
-
-    print("IDOR Form Data Retrieved:", form_data)  # Debugging
 
     @stream_with_context
     def generate_results():
@@ -110,77 +108,84 @@ def bac_stream():
 
     if not bac_form_data:
         return Response("data: Error: No form data found.\n\n", content_type="text/event-stream")
-
-    print("BAC Form Data Retrieved:", bac_form_data) 
-
-    # Read URLs from a text file
     try:
         with open("BacURLs.txt", "r") as file:
             urls = [line.strip() for line in file.readlines() if line.strip()]
     except Exception as e:
-        return Response(f"data: Error reading URL file: {str(e)}\n\n", content_type="text/event-stream")
-
-    if not urls:
-        return Response("data: Error: No URLs found in file.\n\n", content_type="text/event-stream")
-
+        return Response(f"Exception Occured while reading BacUrls.txt : {e}")
+    #print("BAC Form Data Retrieved:", bac_form_data) 
+   
     @stream_with_context
     def generate_results():
+        bac_flag = 0
         yield "data: Starting BAC Testing...\n\n"
 
         lower_token = bac_form_data.get("lower_token")
         higher_token = bac_form_data.get("higher_token")
+
+        yield f"data: Lower privilage token : {lower_token}\n\n"
+        yield f"data: Higher privilage token : {higher_token}\n\n"
 
         # Validate required fields
         if not lower_token or not higher_token:
             yield "data: Error: Missing required parameters.\n\n"
             return
 
-        print("Form Data Received:", bac_form_data)
+        #print("Form Data Received:", bac_form_data)
         headers_lower = {"Authorization": f"Bearer {lower_token}"}
         headers_higher = {"Authorization": f"Bearer {higher_token}"}
 
-        methods = ["GET", "POST", "DELETE", "PATCH", "PUT"]
-        results = {}
+        #1.Basic BAC testing
+        try:
+            yield f"data: Checking access control mechanisms...\n\n"
+            time.sleep(5)
+            results = basic_bac(urls,headers_lower,headers_higher)
+            #print(results)
+            for key,result in results.items():
+                if (result["user_status"] == result["admin_status"] and result["user_content"] == result["admin_content"]):
+                    bac_flag=1
+                    yield f"data: <div class='result-item text-green'>"
+                    yield f"<p><strong>Vulnerable:</strong> Lower privilage token can perform {result["method"]} actions on {result["url"]} </p></div><hr>\n\n"    
+                else:
+                    yield f"data: <div class='result-item text-red'>"
+                    yield f"<p><strong>Secure:</strong> Access control works for {result["method"]} on {result["url"]}.</p></div><hr>\n\n"
+        except Exception as e:
+            yield "data: Error Testing BAC!!!\n\n"
+            return
 
-        for url in urls:
-            for method in methods:
-                try:
-                    # Admin Access
-                    yield f"data: Checking admin access to {url} using {method}...\n\n"
-                    response_admin = requests.request(method, url, headers=headers_higher)
-                    admin_content = response_admin.text
-                    admin_status = response_admin.status_code
+        #2.Header Injection Bypass
+        if bac_flag == 0:
+            yield f"data: Moving To Second Phase Of Testing - Header Injection\n\n"
+            time.sleep(5)
+            try:
+                results = header_inj_bac(urls,headers_lower,headers_higher)
+                for url,result in results.items():
+                    if (result["user_status"] == result["admin_status"] and result["user_content"] == result["admin_content"]):
+                        bac_flag=1
+                        yield f"data: <div class='result-item text-green'>"
+                        yield f"<p><strong>Vulnerable:</strong> Lower privilage token can perform GET actions on {result["url"]} </p></div><hr>\n\n"
+                    else:
+                        yield f"data: <div class='result-item text-red'>"
+                        yield f"<p><strong>Secure:</strong> Access control works for GET on {result["url"]}.</p></div><hr>\n\n"       
+            except Exception as e:
+                yield f"data: Error Occured While Testing Header Injection For BAC\n\n"
 
-                    # User Access
-                    yield f"data: Checking user access to {url} using {method}...\n\n"
-                    response_user = requests.request(method, url, headers=headers_lower)
-                    user_content = response_user.text
-                    user_status = response_user.status_code
-
-                    # Store results
-                    results[(url, method)] = {
-                        "admin_status": admin_status,
-                        "user_status": user_status,
-                        "admin_content": admin_content,
-                        "user_content": user_content,
-                    }
-
-                except Exception as e:
-                    yield f"data: Error in {method} request to {url}: {str(e)}\n\n"
-                    continue
-
-        # Analyze the results
-        for (url, method), result in results.items():
-            if (
-                result["user_status"] == result["admin_status"]
-                and result["user_content"] == result["admin_content"]
-            ):
-                yield f"data: <div class='result-item text-red'>"
-                yield f"data: <p><strong>Vulnerable:</strong> User can perform {method} actions on {url} meant for admin!</p></div><hr>\n\n"
-            else:
-                yield f"data: <div class='result-item text-green'>"
-                yield f"data: <p><strong>Secure:</strong> Access control works for {method} on {url}.</p></div><hr>\n\n"
-
+        #3.Endpoint Capitalization
+        if bac_flag == 0:
+            yield f"data: Moving To Third Phase Of Testing - Endpoint Capitalization\n\n"
+            time.sleep(5)
+            try:
+                results = capital_bypass(urls,headers_lower,headers_higher)
+                for url,result in results.items():
+                    if (result["user_status"] == result["admin_status"] and result["user_content"] == result["admin_content"]):
+                        bac_flag=1
+                        yield f"data: <div class='result-item text-green'>"
+                        yield f"<p><strong>Vulnerable:</strong> Lower Privilage Token Can Perform GET Actions Using Payload {result["variation"]} </p></div><hr>\n\n"
+                    else:
+                        yield f"data: <div class='result-item text-red'>"
+                        yield f"<p><strong>Secure:</strong> Access control works for GET on {result["url"]}. Access attempt using {result["variation"]} failed</p></div><hr>\n\n"
+            except:
+                yield f"data: Error Occured While Testing Endpoint Capitalization For BAC : {str(e)}\n\n"          
         yield "data: BAC Testing Completed.\n\n" 
 
     return Response(generate_results(), content_type="text/event-stream") 
