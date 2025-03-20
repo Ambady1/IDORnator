@@ -14,7 +14,7 @@ app.secret_key = "your_secret_key"  # Change this to a secure key
 def home():
     """Render the home page and handle form submission."""
     if request.method == "POST":
-        mode = request.form.get("mode")
+        mode = request.form.get("modeValue")
 
         if mode == "IDOR":
             session["idor_form_data"] = request.form.to_dict()
