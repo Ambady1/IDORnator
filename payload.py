@@ -86,7 +86,7 @@ def analyze_idor(payload,resp):
     
 def generate_report_idor(url,payload,resp):
     messages=[{"role": "user", "content": (
-            f"Write a vulnerability report based on the given data:- The original URL used for testing is this : {url}.This is the list of variation of original URL that our system marked vulnerable : {payload} and this is a list containing the html resposes we got for these URLs .Based on the provided info generate a vulnerability report which includes heading ,description of vulnerability , steps to reproduce the vulnerability ,impact and recomendation"            
+            f"Write a vulnerability report based on the given data:- The original URL used for testing is this : {url}.This is the list of variation of original URL that our system marked vulnerable : {payload} and this is a list containing the html resposes we got for these URLs : {resp}.Based on the provided info generate a vulnerability report which includes heading ,description of vulnerability , steps to reproduce the vulnerability ,impact and recomendation"            
         )}]
     try:
         response = client.chat.completions.create(
@@ -101,4 +101,9 @@ def generate_report_idor(url,payload,resp):
     except Exception as e:
         print(f"Error generating report: {e}")
         return ["Some Error Occured"]  # Default payloads as fallback
- 
+
+def generate_header_bypass_report(url,vuln_header,vuln_content):
+    messages=[{"role": "user", "content": (
+            f"Write a vulnerability report based on the given data:- The original URL used for testing is this : {url}. IDOR worked when the following header injection : {vuln_header} is added. The response recieved on successful IDOR is this : {vuln_content}.Based on the provided info generate a vulnerability report which includes heading ,description of vulnerability , steps to reproduce the vulnerability ,impact and recomendation"            
+        )}]
+    #try:

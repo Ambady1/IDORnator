@@ -1,7 +1,8 @@
 import requests
 from analyze_resp import resp_analyze
 from process_Form import process_form_n_cookie
-
+from gen_report import save_report_as_html
+from payload import generate_header_bypass_report
 # List of headers to be sent
 headers = {
     "X-Originally-Forwarded-For": "127.0.0.1",
@@ -54,6 +55,8 @@ headers = {
 # Function to send requests
 def send_custom_header_request(form_data,flag):
     result = []
+    vuln_header = []
+    vuln_content = []
     url,cookie = process_form_n_cookie(form_data)  # Extract URL from the form
 
     for key, value in headers.items():
@@ -81,6 +84,8 @@ def send_custom_header_request(form_data,flag):
             # Update the dictionary if resp_res indicates vulnerability
             if resp_res == 'Y':
                 response_entry["Result after response analysis"] = "VULNERABLE"
+                vuln_header.append(header_value)
+                vuln_content.append(response.content)
                 flag = 1
 
             # Append the final dictionary to responses
@@ -93,5 +98,44 @@ def send_custom_header_request(form_data,flag):
                 "value": header_value,
                 "status": f"Error: {str(e)}"
             })
-
+    if vuln_header:
+        try:
+            report = generate_header_bypass_report(url,vuln_header,vuln_content)
+            save_report_as_html(report)
+        except:
+            print("Report generation failed")
     return result,flag
+
+def header_inj_bac(urls,headers_lower,headers_higher):
+    results = {}
+    for key, value in headers.items():
+        # Replace {url-in-context} with the actual URL value
+        header_value = value.replace("{url-in-context}", url) if "{url-in-context}" in value else value
+
+        # Create a single-header dictionary for the current request
+        single_header = {key: header_value}
+
+        #Combine both headers into single dictionary
+        lower_combined_headers = single_header | headers_lower
+        higher_combined_headers = single_header | headers_higher
+        try:
+            for url in urls:
+                response_admin = requests.get(url,headers=higher_combined_headers)
+                admin_content = response_admin.text
+                admin_status = response_admin.status_code
+
+                response_user = requests.get(url,headers=lower_combined_headers)
+                user_content = response_user.text
+                user_status = response_user.status_code
+
+                results[(url)] = {
+                    "admin_status": admin_status,
+                    "user_status": user_status,
+                    "admin_content": admin_content,
+                    "user_content": user_content,
+                    "url": url,
+                    "header": single_header
+                }
+        except:
+            print("Error occured while sending GET request")
+    return results
