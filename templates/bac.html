@@ -2,19 +2,43 @@
 
 {% block head %}
 <title>BAC Result Display</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <script>
+
+let analysis_text= `
+Phase 1: Basic BAC Testing
+In this phase, we check if a lower-privileged user can perform actions meant for higher-privileged users. The system sends requests using both lower and higher privilege tokens and compares the responses. If the status codes and content match, it indicates that the lower privilege user can access restricted resources, making the system vulnerable. If the access is restricted correctly, the system is secure.
+
+Phase 2: Header Injection Bypass
+If no vulnerabilities are found in the first phase, we attempt bypassing access controls using header modifications. Certain web applications rely on custom headers like X-Forwarded-For or X-Original-URL for authorization checks. By manipulating these headers, we check if a lower-privileged user can trick the system into granting unauthorized access. If the responses match those of a higher-privileged user, the system is vulnerable.
+
+Phase 3: Endpoint Capitalization
+In the final phase, we test case-sensitive bypass techniques. Some applications do not enforce strict URL validation, allowing variations like /admin, /Admin, or /ADMIN to bypass access controls. We send requests using different capitalization formats to check if restricted endpoints become accessible. If a lower-privileged user can access an admin endpoint due to case insensitivity, the system is considered vulnerable.`
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const resultsContainer = document.getElementById("results");
+    const SideContainer = document.getElementById("side-container");
+    const AnalysisContainer = document.getElementById("result_analysis");
+
     const eventSource = new EventSource(`/bac-stream`);
 
     eventSource.onmessage = function (event) {
         const newContent = document.createElement("div");
         newContent.innerHTML = event.data;
         resultsContainer.appendChild(newContent);
-        resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        resultsContainer.scrollTop = resultsContainer.scrollHeight; // Auto-scroll to bottom
+
+        if (event.data.includes("Vulnerable")) {
+            console.log(event.data);
+            const SideContent = document.createElement("div");
+            SideContent.innerHTML = event.data;
+            SideContainer.appendChild(SideContent);
+        }   
 
         if (event.data.includes("BAC Testing Completed.")) {
             eventSource.close();
+            fetchBacSteps();  // Call the function to fetch and update analysis
         }
     };
 
@@ -22,12 +46,39 @@ document.addEventListener("DOMContentLoaded", function () {
         resultsContainer.innerHTML += "<p>An error occurred.</p>";
         eventSource.close();
     };
+
+    function fetchBacSteps() {
+        
+
+                AnalysisContainer.innerHTML = ""; 
+                const AnalysisResult = document.createElement("div");
+                AnalysisResult.innerHTML = analysis_text;
+                AnalysisContainer.appendChild(AnalysisResult);
+            }
+           
+    
 });
 </script>
 {% endblock %}
 
 {% block body %}
-<h1>BAC Testing</h1>
+<div class="container mx-0 my-0 px-4 w-full h-screen bg-[#212121] flex flex-col">
+    <h1 class="text-2xl text-white">BAC Testing</h1>
+    <div class="flex space-x-4 flex-grow">
+        <!-- Results container (60% width, fixed height, scrollable) -->
+        <div>
+            <div id="results" class="w-[620px] h-[400px] bg-[#2F2F2F] p-4 text-white overflow-auto">
+                <!-- Dynamic content will be appended here -->
+            </div>
+            <div id="result_analysis" class="w-[670px] h-[200px] bg-[#2F2F2F] p-4 my-4 text-white overflow-auto">
+                <!-- Analysis results will be displayed here -->
+            </div>
+        </div>
 
-<div id="results" class="results"></div>
+        <!-- "Hai" container (40% width, fixed height, scrollable) -->
+        <div id="side-container" class="w-[400px] h-[620px] bg-[#2F2F2F] p-4 my-4 mx-4 text-white overflow-auto">
+            <p>Vulnerabilities Found</p>
+        </div>
+    </div>
+</div>
 {% endblock %}
